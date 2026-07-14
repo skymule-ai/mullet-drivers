@@ -31,10 +31,12 @@ RUN mkdir -p src && \
     git checkout --detach ${LIVOX_ROS_DRIVER2_REF} && \
     cp package_ROS2.xml package.xml && \
     source /opt/ros/humble/setup.bash && \
+    apt-get update && \
     rosdep install --from-paths /opt/livox_ws/src --ignore-src -r -y && \
     ./build.sh humble && \
     source install/setup.bash && \
-    ros2 pkg prefix livox_ros_driver2
+    ros2 pkg prefix livox_ros_driver2 && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY images/livox/entrypoint.sh /usr/local/bin/mullet-livox-entrypoint
 RUN chmod 0755 /usr/local/bin/mullet-livox-entrypoint
