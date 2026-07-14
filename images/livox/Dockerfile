@@ -29,8 +29,10 @@ RUN mkdir -p src && \
     git clone https://github.com/Livox-SDK/livox_ros_driver2.git src/livox_ros_driver2 && \
     cd src/livox_ros_driver2 && \
     git checkout --detach ${LIVOX_ROS_DRIVER2_REF} && \
-    ./build.sh humble && \
+    cp package_ROS2.xml package.xml && \
     source /opt/ros/humble/setup.bash && \
+    rosdep install --from-paths /opt/livox_ws/src --ignore-src -r -y && \
+    ./build.sh humble && \
     source install/setup.bash && \
     ros2 pkg prefix livox_ros_driver2
 
