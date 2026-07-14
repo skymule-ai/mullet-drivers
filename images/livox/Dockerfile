@@ -34,7 +34,7 @@ RUN mkdir -p src && \
     apt-get update && \
     rosdep install --from-paths /opt/livox_ws/src --ignore-src -r -y && \
     ./build.sh humble && \
-    source install/setup.bash && \
+    source /opt/livox_ws/install/setup.bash && \
     ros2 pkg prefix livox_ros_driver2 && \
     rm -rf /var/lib/apt/lists/*
 
