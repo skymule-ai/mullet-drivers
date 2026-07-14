@@ -1,0 +1,40 @@
+name: mullet_ros_drivers
+
+x-ros-environment: &ros-environment
+  ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+  RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+  NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+  NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}
+
+services:
+  livox:
+    profiles: [livox]
+    build:
+      context: .
+      dockerfile: images/livox/Dockerfile
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    image: ghcr.io/skymule-ai/mullet-ros-livox:${LIVOX_IMAGE_TAG:-local}
+    network_mode: host
+    runtime: nvidia
+    environment: *ros-environment
+    volumes:
+      - ./config/livox:/config:ro
+
+  realsense:
+    profiles: [realsense]
+    build:
+      context: .
+      dockerfile: images/realsense/Dockerfile
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    image: ghcr.io/skymule-ai/mullet-ros-realsense:${REALSENSE_IMAGE_TAG:-local}
+    network_mode: host
+    runtime: nvidia
+    environment: *ros-environment
+    # librealsense uses the RSUSB backend in this image, so it needs USB access
+    # but no host kernel module or broad /dev mount.
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    volumes:
+      - ./config/realsense:/config:ro
