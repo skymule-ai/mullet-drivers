@@ -38,3 +38,21 @@ services:
       - /dev/bus/usb:/dev/bus/usb
     volumes:
       - ./config/realsense:/config:ro
+
+  viz:
+    profiles: [viz]
+    build:
+      context: .
+      dockerfile: images/viz/Dockerfile
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    image: ghcr.io/skymule-ai/mullet-ros-viz:${VIZ_IMAGE_TAG:-local}
+    network_mode: host
+    runtime: nvidia
+    environment:
+      <<: *ros-environment
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: "1"
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
