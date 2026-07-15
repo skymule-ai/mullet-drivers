@@ -42,6 +42,11 @@ PointCloud2 without launching RViz. CUDA is available for downstream
 perception nodes; neither vendor driver automatically moves its point-cloud
 generation onto CUDA.
 
+The RealSense topics default to `/uav0/d435i/...`. Set
+`REALSENSE_CAMERA_NAMESPACE`, `REALSENSE_CAMERA_NAME`, and
+`REALSENSE_TF_PREFIX` in the per-vehicle deployment configuration to avoid
+topic and TF-frame collisions between aircraft.
+
 The optional `viz` profile runs RViz on a display connected to the Orin. It is
 not part of the default profile set. On an X11 desktop, permit the local root
 container to use the display before starting it:
