@@ -79,11 +79,19 @@ docker compose --profile livox build
 
 docker compose --profile realsense build
 ./scripts/smoke-realsense.sh
+
+# Requires an X11 display attached to the Orin.
+xhost +si:localuser:root
+docker compose --profile viz build
+DISPLAY=:0 ./scripts/smoke-viz.sh
+xhost -si:localuser:root
 ```
 
 Connect each sensor before its runtime test. After the images have been
-published, run the selected profile with `docker compose --profile livox up`
-or `docker compose --profile realsense up`.
+published, run the selected profile with `docker compose --profile livox up`,
+`docker compose --profile realsense up`, or `docker compose --profile viz up`.
+The RViz smoke test starts RViz briefly and confirms that it remains connected
+to the local X11 display; defer it on headless Orins.
 
 ## CI and image tags
 
