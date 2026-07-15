@@ -8,3 +8,6 @@ configuration repository and are mounted over this directory.
 `ros__parameters` nesting. Set the ROS topic namespace, camera name, and TF
 prefix through the `REALSENSE_CAMERA_NAMESPACE`, `REALSENSE_CAMERA_NAME`, and
 `REALSENSE_TF_PREFIX` deployment variables.
+
+The Orin uses librealsense's NEON point-cloud implementation. Configure it
+with `pointcloud__neon_.*` keys in this file.
