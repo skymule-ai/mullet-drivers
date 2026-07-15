@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.1.0
+ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.2.0
 FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -35,7 +35,9 @@ RUN mkdir -p src && \
     ros2 pkg prefix livox_ros_driver2
 
 COPY images/livox/entrypoint.sh /usr/local/bin/mullet-livox-entrypoint
-RUN chmod 0755 /usr/local/bin/mullet-livox-entrypoint
+COPY images/livox/profile.sh /etc/profile.d/10-mullet-livox.sh
+RUN chmod 0755 /usr/local/bin/mullet-livox-entrypoint && \
+    chmod 0644 /etc/profile.d/10-mullet-livox.sh
 
 ENTRYPOINT ["/usr/local/bin/mullet-livox-entrypoint"]
 CMD ["ros2", "run", "livox_ros_driver2", "livox_ros_driver2_node", "--ros-args", "-p", "xfer_format:=0", "-p", "multi_topic:=0", "-p", "data_src:=0", "-p", "publish_freq:=10.0", "-p", "output_data_type:=0", "-p", "frame_id:=livox_frame", "-p", "user_config_path:=/config/MID360_config.json"]

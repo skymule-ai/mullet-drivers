@@ -19,7 +19,7 @@ compose.yaml        Select drivers through Compose profiles
 All images use the base release selected by `BASE_IMAGE` in `.env`:
 
 ```dotenv
-BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.1.0
+BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.2.0
 ```
 
 Use a release tag, never `main`, for driver builds intended for a drone.
@@ -41,6 +41,15 @@ frames, aligned depth, and a textured PointCloud2. The MID-360 image publishes
 PointCloud2 without launching RViz. CUDA is available for downstream
 perception nodes; neither vendor driver automatically moves its point-cloud
 generation onto CUDA.
+
+The RealSense topics default to `/uav0/d435i/...`. Set
+`REALSENSE_CAMERA_NAMESPACE`, `REALSENSE_CAMERA_NAME`, and
+`REALSENSE_TF_PREFIX` in the per-vehicle deployment configuration to avoid
+topic and TF-frame collisions between aircraft.
+
+For interactive inspection, use `docker compose exec <service> bash -l`.
+The login shell loads ROS Humble, the base workspace, and the selected driver
+overlay, so `ros2` commands need no manual `source` steps.
 
 The optional `viz` profile runs RViz on a display connected to the Orin. It is
 not part of the default profile set. On an X11 desktop, permit the local root
@@ -97,4 +106,4 @@ to the local X11 display; defer it on headless Orins.
 
 CI builds Livox and RealSense independently on ARM64. Branch pushes publish
 SHA-tagged test images; release tags publish matching immutable driver tags.
-Both CI builds use `mullet-ros2-base:v0.1.0`.
+Both CI builds use `mullet-ros2-base:v0.2.0`.
