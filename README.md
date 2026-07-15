@@ -47,6 +47,10 @@ The RealSense topics default to `/uav0/d435i/...`. Set
 `REALSENSE_TF_PREFIX` in the per-vehicle deployment configuration to avoid
 topic and TF-frame collisions between aircraft.
 
+For interactive inspection, use `docker compose exec <service> bash -l`.
+The login shell loads ROS Humble, the base workspace, and the selected driver
+overlay, so `ros2` commands need no manual `source` steps.
+
 The optional `viz` profile runs RViz on a display connected to the Orin. It is
 not part of the default profile set. On an X11 desktop, permit the local root
 container to use the display before starting it:

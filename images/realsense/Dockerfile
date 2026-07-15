@@ -48,7 +48,9 @@ RUN mkdir -p src && \
     rm -rf /var/lib/apt/lists/*
 
 COPY images/realsense/entrypoint.sh /usr/local/bin/mullet-realsense-entrypoint
-RUN chmod 0755 /usr/local/bin/mullet-realsense-entrypoint
+COPY images/realsense/profile.sh /etc/profile.d/10-mullet-realsense.sh
+RUN chmod 0755 /usr/local/bin/mullet-realsense-entrypoint && \
+    chmod 0644 /etc/profile.d/10-mullet-realsense.sh
 
 ENTRYPOINT ["/usr/local/bin/mullet-realsense-entrypoint"]
 CMD ["ros2", "launch", "realsense2_camera", "rs_launch.py", "config_file:=/config/d435i.yaml"]
