@@ -38,12 +38,14 @@ RUN mkdir -p src && \
     cd src/realsense-ros && \
     git checkout --detach ${REALSENSE_ROS_REF} && \
     source /opt/ros/humble/setup.bash && \
+    apt-get update && \
     rosdep install --from-paths . --ignore-src -r -y --skip-keys librealsense2 && \
     cd /opt/realsense_ws && \
     colcon build --merge-install \
       --packages-select realsense2_camera_msgs realsense2_description realsense2_camera && \
     source install/setup.bash && \
-    ros2 pkg prefix realsense2_camera
+    ros2 pkg prefix realsense2_camera && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY images/realsense/entrypoint.sh /usr/local/bin/mullet-realsense-entrypoint
 RUN chmod 0755 /usr/local/bin/mullet-realsense-entrypoint
