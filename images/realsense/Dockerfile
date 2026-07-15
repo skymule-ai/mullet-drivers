@@ -10,6 +10,8 @@ LABEL org.opencontainers.image.title="mullet ROS Intel RealSense D435i driver"
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libgl1-mesa-dev \
+      libglfw3-dev \
+      libglu1-mesa-dev \
       libssl-dev \
       libudev-dev \
       libusb-1.0-0-dev \
@@ -26,6 +28,7 @@ RUN git clone https://github.com/realsenseai/librealsense.git && \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_EXAMPLES=OFF \
       -DBUILD_GRAPHICAL_EXAMPLES=OFF \
+      -DBUILD_GLSL_EXTENSIONS=ON \
       -DFORCE_RSUSB_BACKEND=ON && \
     cmake --build build --parallel "$(nproc)" && \
     cmake --install build && \
