@@ -42,7 +42,8 @@ RUN mkdir -p src && \
     rosdep install --from-paths . --ignore-src -r -y --skip-keys librealsense2 && \
     cd /opt/realsense_ws && \
     colcon build --merge-install \
-      --packages-select realsense2_camera_msgs realsense2_description realsense2_camera && \
+      --packages-select realsense2_camera_msgs realsense2_description realsense2_camera \
+      --cmake-args -DBUILD_ACCELERATE_GPU_WITH_GLSL=ON && \
     source install/setup.bash && \
     ros2 pkg prefix realsense2_camera && \
     rm -rf /var/lib/apt/lists/*

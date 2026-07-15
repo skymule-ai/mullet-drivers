@@ -31,7 +31,9 @@ services:
     image: ghcr.io/skymule-ai/mullet-ros-realsense:${REALSENSE_IMAGE_TAG:-local}
     network_mode: host
     runtime: nvidia
-    environment: *ros-environment
+    environment:
+      <<: *ros-environment
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility,graphics}
     # librealsense uses the RSUSB backend in this image, so it needs USB access
     # but no host kernel module or broad /dev mount.
     devices:
