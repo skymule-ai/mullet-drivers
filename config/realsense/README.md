@@ -11,7 +11,3 @@ prefix through the `REALSENSE_CAMERA_NAMESPACE`, `REALSENSE_CAMERA_NAME`, and
 
 The Orin uses librealsense's NEON point-cloud implementation. Configure it
 with `pointcloud__neon_.*` keys in this file.
-
-GLSL acceleration is built into the image but disabled by default. Set
-`accelerate_gpu_with_glsl: true` and restart the driver to benchmark it on the
-target Orin.

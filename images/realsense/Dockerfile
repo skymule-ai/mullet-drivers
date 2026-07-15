@@ -10,8 +10,6 @@ LABEL org.opencontainers.image.title="mullet ROS Intel RealSense D435i driver"
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libgl1-mesa-dev \
-      libglfw3-dev \
-      libglu1-mesa-dev \
       libssl-dev \
       libudev-dev \
       libusb-1.0-0-dev \
@@ -28,8 +26,6 @@ RUN git clone https://github.com/realsenseai/librealsense.git && \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_EXAMPLES=OFF \
       -DBUILD_GRAPHICAL_EXAMPLES=OFF \
-      -DBUILD_GLSL_EXTENSIONS=ON \
-      -DBUILD_PC_STITCHING=ON \
       -DFORCE_RSUSB_BACKEND=ON && \
     cmake --build build --parallel "$(nproc)" && \
     cmake --install build && \
@@ -46,8 +42,7 @@ RUN mkdir -p src && \
     rosdep install --from-paths . --ignore-src -r -y --skip-keys librealsense2 && \
     cd /opt/realsense_ws && \
     colcon build --merge-install \
-      --packages-select realsense2_camera_msgs realsense2_description realsense2_camera \
-      --cmake-args -DBUILD_ACCELERATE_GPU_WITH_GLSL=ON && \
+      --packages-select realsense2_camera_msgs realsense2_description realsense2_camera && \
     source install/setup.bash && \
     ros2 pkg prefix realsense2_camera && \
     rm -rf /var/lib/apt/lists/*
