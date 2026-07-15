@@ -29,6 +29,7 @@ RUN git clone https://github.com/realsenseai/librealsense.git && \
       -DBUILD_EXAMPLES=OFF \
       -DBUILD_GRAPHICAL_EXAMPLES=OFF \
       -DBUILD_GLSL_EXTENSIONS=ON \
+      -DBUILD_PC_STITCHING=ON \
       -DFORCE_RSUSB_BACKEND=ON && \
     cmake --build build --parallel "$(nproc)" && \
     cmake --install build && \
