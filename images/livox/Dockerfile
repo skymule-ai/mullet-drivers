@@ -12,6 +12,7 @@ RUN apt-get update && \
       libboost-system-dev \
       libpcl-dev \
       ros-humble-ament-cmake-auto \
+      ros-humble-perception-pcl \
       libyaml-cpp-dev && \
     rm -rf /var/lib/apt/lists/*
 
