@@ -10,6 +10,7 @@ LABEL org.opencontainers.image.title="mullet ROS Livox MID-360 driver"
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libboost-system-dev \
+      libpcl-dev \
       ros-humble-ament-cmake-auto \
       libyaml-cpp-dev && \
     rm -rf /var/lib/apt/lists/*
