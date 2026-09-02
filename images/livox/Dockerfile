@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.2.0
+ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
 FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -10,6 +10,7 @@ LABEL org.opencontainers.image.title="mullet ROS Livox MID-360 driver"
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libboost-system-dev \
+      ros-humble-ament-cmake-auto \
       libyaml-cpp-dev && \
     rm -rf /var/lib/apt/lists/*
 
