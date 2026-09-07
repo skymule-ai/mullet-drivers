@@ -19,7 +19,7 @@ compose.yaml        Select drivers through Compose profiles
 All images use the base release selected by `BASE_IMAGE` in `.env`:
 
 ```dotenv
-BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.2.0
+BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
 ```
 
 Use a release tag, never `main`, for driver builds intended for a drone.
@@ -106,4 +106,4 @@ to the local X11 display; defer it on headless Orins.
 
 CI builds Livox and RealSense independently on ARM64. Branch pushes publish
 SHA-tagged test images; release tags publish matching immutable driver tags.
-Both CI builds use `mullet-ros2-base:v0.2.0`.
+Both CI builds use `mullet-ros2-base:v0.4.0`.
