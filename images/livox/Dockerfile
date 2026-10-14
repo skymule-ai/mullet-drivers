@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
+ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0
 FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -13,12 +13,12 @@ RUN apt-get update && \
       git \
       libboost-system-dev \
       libpcl-dev \
-      libyaml-cpp-dev \
-      ros-humble-pcl-conversions \
-      ros-humble-pcl-msgs && \
+      libyaml-cpp-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # ── Livox SDK2 ────────────────────────────────────────────────────────────────
+# SDK2 uses std::uint8_t without <cstdint>, which GCC 13 (Ubuntu 24.04) no longer
+# pulls in transitively.
 WORKDIR /opt
 
 RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git && \
@@ -26,13 +26,16 @@ RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git && \
     git checkout "${LIVOX_SDK2_REF}" && \
     mkdir build && \
     cd build && \
-    cmake .. && \
+    cmake .. -DCMAKE_CXX_FLAGS="-include cstdint" && \
     make -j"$(nproc)" && \
     make install && \
     cd /opt && \
     rm -rf Livox-SDK2
 
-# ── livox_ros_driver2 (ROS 2 Humble) ─────────────────────────────────────────
+# ── livox_ros_driver2 (ROS 2 Jazzy) ──────────────────────────────────────────
+# The driver ships per-ROS-version manifests; build.sh only copies the ROS 2 one
+# into place and calls colcon, so do both here. rosdep installs its ROS deps
+# (pcl_conversions, pcl_msgs, ...) for the base image's distro.
 WORKDIR /opt/livox_ws
 
 RUN mkdir -p src && \
@@ -40,9 +43,15 @@ RUN mkdir -p src && \
     git clone https://github.com/Livox-SDK/livox_ros_driver2.git && \
     cd livox_ros_driver2 && \
     git checkout "${LIVOX_ROS_DRIVER2_REF}" && \
+    cp package_ROS2.xml package.xml && \
     cd /opt/livox_ws && \
-    source /opt/ros/humble/setup.sh && \
-    ./src/livox_ros_driver2/build.sh humble
+    source /usr/local/share/mullet-ros/setup.bash && \
+    apt-get update && \
+    rosdep install --from-paths src --ignore-src -r -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
+      -DROS_EDITION=ROS2 -DDISTRO_ROS=${ROS_DISTRO} && \
+    rm -rf build log
 
 COPY images/livox/entrypoint.sh /usr/local/bin/mullet-livox-entrypoint
 COPY images/livox/profile.sh /etc/profile.d/10-mullet-livox.sh
