@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
+ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0
 FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -37,7 +37,7 @@ RUN mkdir -p src && \
     git clone https://github.com/realsenseai/realsense-ros.git src/realsense-ros && \
     cd src/realsense-ros && \
     git checkout --detach ${REALSENSE_ROS_REF} && \
-    source /opt/ros/humble/setup.bash && \
+    source /usr/local/share/mullet-ros/setup.bash && \
     apt-get update && \
     rosdep install --from-paths . --ignore-src -r -y --skip-keys librealsense2 && \
     cd /opt/realsense_ws && \

@@ -1,6 +1,6 @@
-# mullet_ros_drivers
+# mullet-drivers
 
-ROS 2 sensor-driver images for the Mullet Jetson platform. Each driver image
+ROS 2 Jazzy sensor-driver images for the Mullet Jetson platform. Each driver image
 extends an immutable release of `mullet-ros2-base`; the driver repository does
 not modify the base image or store aircraft-specific calibration.
 
@@ -9,7 +9,7 @@ not modify the base image or store aircraft-specific calibration.
 ```text
 images/livox/       Livox SDK2 + livox_ros_driver2 image for MID-360
 images/realsense/   librealsense + realsense-ros image for D435i
-images/viz/         optional local RViz image
+images/viz/         optional RViz + foxglove_bridge image
 config/             Defaults and examples only
 compose.yaml        Select drivers through Compose profiles
 ```
@@ -19,7 +19,7 @@ compose.yaml        Select drivers through Compose profiles
 All images use the base release selected by `BASE_IMAGE` in `.env`:
 
 ```dotenv
-BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
+BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0
 ```
 
 Use a release tag, never `main`, for driver builds intended for a drone.
@@ -48,7 +48,7 @@ The RealSense topics default to `/uav0/d435i/...`. Set
 topic and TF-frame collisions between aircraft.
 
 For interactive inspection, use `docker compose exec <service> bash -l`.
-The login shell loads ROS Humble, the base workspace, and the selected driver
+The login shell loads ROS 2 Jazzy, the base workspace, and the selected driver
 overlay, so `ros2` commands need no manual `source` steps.
 
 The optional `viz` profile runs RViz on a display connected to the Orin. It is
@@ -64,6 +64,11 @@ The `viz` service uses the host X11 socket and the NVIDIA graphics runtime.
 Run `xhost -si:localuser:root` when finished. For flight use, leave `viz` off;
 use a ground-station RViz instance instead.
 
+Without a display on the Orin, the `foxglove` profile runs foxglove_bridge from
+the same image. Open Lichtblick or Foxglove on the ground station and connect to
+`ws://<drone-ip>:8765`. The bridge streams only the topics a panel subscribes to;
+a raw MID-360 cloud is about 5 MB/s over WiFi.
+
 ## Responsibilities
 
 - This repository owns reusable driver source, image builds, launch defaults,
@@ -76,7 +81,7 @@ use a ground-station RViz instance instead.
 
 Livox uses host networking and should not need broad device access. RealSense
 uses librealsense's RSUSB backend and is given USB access only. Both images
-inherit CUDA 12.6 from the base and run with the NVIDIA runtime for downstream
+inherit CUDA 13.2 from the base and run with the NVIDIA runtime for downstream
 GPU processing. Do not add `privileged: true` or mount all of `/dev`.
 
 ## Build and test on the Orin
@@ -104,6 +109,8 @@ to the local X11 display; defer it on headless Orins.
 
 ## CI and image tags
 
-CI builds Livox and RealSense independently on ARM64. Branch pushes publish
+CI builds the Livox, RealSense and viz images independently on ARM64. Branch pushes publish
 SHA-tagged test images; release tags publish matching immutable driver tags.
-Both CI builds use `mullet-ros2-base:v0.4.0`.
+All CI builds use `mullet-ros2-base:v0.5.0` (ROS 2 Jazzy, like mullet-core).
+Images are `ghcr.io/skymule-ai/mullet-drivers-{livox,realsense,viz}`; tags up to
+`v0.3.0` are the Humble images, published as `mullet-ros-{livox,realsense}`.

@@ -1,8 +1,11 @@
-name: mullet_ros_drivers
+name: mullet-drivers
 
 x-ros-environment: &ros-environment
   ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
   RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+  # Same as mullet-core and the paddock: Fast DDS shared memory across host-networked
+  # containers discovers topics but drops samples.
+  FASTDDS_BUILTIN_TRANSPORTS: ${FASTDDS_BUILTIN_TRANSPORTS:-UDPv4}
   NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
   NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}
 
@@ -14,7 +17,7 @@ services:
       dockerfile: images/livox/Dockerfile
       args:
         BASE_IMAGE: ${BASE_IMAGE}
-    image: ghcr.io/skymule-ai/mullet-ros-livox:${LIVOX_IMAGE_TAG:-local}
+    image: ghcr.io/skymule-ai/mullet-drivers-livox:${LIVOX_IMAGE_TAG:-local}
     network_mode: host
     runtime: nvidia
     environment: *ros-environment
@@ -28,16 +31,19 @@ services:
       dockerfile: images/realsense/Dockerfile
       args:
         BASE_IMAGE: ${BASE_IMAGE}
-    image: ghcr.io/skymule-ai/mullet-ros-realsense:${REALSENSE_IMAGE_TAG:-local}
+    image: ghcr.io/skymule-ai/mullet-drivers-realsense:${REALSENSE_IMAGE_TAG:-local}
     network_mode: host
     runtime: nvidia
     environment: *ros-environment
     # librealsense uses the RSUSB backend in this image, so it needs USB access
-    # but no host kernel module or broad /dev mount.
-    devices:
-      - /dev/bus/usb:/dev/bus/usb
+    # but no host kernel module or broad /dev mount. /dev/bus/usb is mounted rather
+    # than passed as a device: the D435i re-enumerates on reset and gets a new node,
+    # which a device mapping would not show.
+    device_cgroup_rules:
+      - "c 189:* rmw"  # USB devices
     volumes:
       - ./config/realsense:/config:ro
+      - /dev/bus/usb:/dev/bus/usb
     command:
       - ros2
       - launch
@@ -55,7 +61,7 @@ services:
       dockerfile: images/viz/Dockerfile
       args:
         BASE_IMAGE: ${BASE_IMAGE}
-    image: ghcr.io/skymule-ai/mullet-ros-viz:${VIZ_IMAGE_TAG:-local}
+    image: ghcr.io/skymule-ai/mullet-drivers-viz:${VIZ_IMAGE_TAG:-local}
     network_mode: host
     runtime: nvidia
     environment:
@@ -65,3 +71,17 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+  # Ground-station view without a display on the Orin: Lichtblick or Foxglove on the
+  # laptop connects to ws://<drone>:8765.
+  foxglove:
+    profiles: [foxglove]
+    image: ghcr.io/skymule-ai/mullet-drivers-viz:${VIZ_IMAGE_TAG:-local}
+    network_mode: host
+    environment: *ros-environment
+    command:
+      - ros2
+      - launch
+      - foxglove_bridge
+      - foxglove_bridge_launch.xml
+      - port:=${FOXGLOVE_PORT:-8765}
