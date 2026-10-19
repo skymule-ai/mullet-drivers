@@ -24,6 +24,16 @@ services:
     volumes:
       - ./config/livox:/config:ro
 
+  # PTP master on the Orin's LiDAR interface: until it runs, the MID-360 stamps its messages with its
+  # own clock (seconds since power-on), not ROS time. Software timestamping: USB NICs have no PHC.
+  # Server only, and no CAP_SYS_TIME: it never steers the Orin clock (chrony owns that).
+  livox-ptp:
+    profiles: [livox]
+    image: ghcr.io/skymule-ai/mullet-drivers-livox:${LIVOX_IMAGE_TAG:-local}
+    network_mode: host
+    restart: unless-stopped
+    command: [ptp4l, -i, "${LIVOX_IFACE:?set LIVOX_IFACE in .env}", -S, -m, --serverOnly, "1"]
+
   realsense:
     profiles: [realsense]
     build:

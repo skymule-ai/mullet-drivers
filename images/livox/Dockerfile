@@ -13,7 +13,8 @@ RUN apt-get update && \
       git \
       libboost-system-dev \
       libpcl-dev \
-      libyaml-cpp-dev && \
+      libyaml-cpp-dev \
+      linuxptp && \
     rm -rf /var/lib/apt/lists/*
 
 # ── Livox SDK2 ────────────────────────────────────────────────────────────────
@@ -53,6 +54,10 @@ RUN mkdir -p src && \
       -DROS_EDITION=ROS2 -DDISTRO_ROS=${ROS_DISTRO} && \
     rm -rf build log
 
+# /livox/lidar is livox_ros_driver2/msg/CustomMsg (xfer_format 1): per-point offset times, which
+# FAST-LIO needs to deskew the scan. Images that consume it copy /opt/livox_ws/install and the SDK
+# library from this image (COPY --from), so the message type and its Jazzy type hash stay identical.
+# ptp4l is here for the livox-ptp service: the MID-360 stamps with its own clock until synced.
 COPY images/livox/entrypoint.sh /usr/local/bin/mullet-livox-entrypoint
 COPY images/livox/profile.sh /etc/profile.d/10-mullet-livox.sh
 
@@ -60,4 +65,4 @@ RUN chmod 0755 /usr/local/bin/mullet-livox-entrypoint && \
     chmod 0644 /etc/profile.d/10-mullet-livox.sh
 
 ENTRYPOINT ["/usr/local/bin/mullet-livox-entrypoint"]
-CMD ["ros2", "run", "livox_ros_driver2", "livox_ros_driver2_node", "--ros-args", "-p", "xfer_format:=0", "-p", "multi_topic:=0", "-p", "data_src:=0", "-p", "publish_freq:=10.0", "-p", "output_data_type:=0", "-p", "frame_id:=livox_frame", "-p", "user_config_path:=/config/MID360s_config.json"]
+CMD ["ros2", "run", "livox_ros_driver2", "livox_ros_driver2_node", "--ros-args", "-p", "xfer_format:=1", "-p", "multi_topic:=0", "-p", "data_src:=0", "-p", "publish_freq:=10.0", "-p", "output_data_type:=0", "-p", "frame_id:=livox_frame", "-p", "user_config_path:=/config/MID360s_config.json"]

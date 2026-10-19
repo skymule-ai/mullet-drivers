@@ -1,10 +1,15 @@
 # Livox configuration
 
-Store example/default Livox JSON configuration in this directory. Actual
-vehicle-specific IP addresses, frame IDs, and calibration belong in the
-per-drone configuration repository and are mounted over this directory.
+`MID360s_config.json` is the example the image loads (`user_config_path:=/config/MID360s_config.json`).
+A drone's real file, with its addresses, lives in mullet-localization and is mounted over this
+directory.
 
-`MID360_config.json` is a template, not a ready-to-run network configuration.
-Before launching, set its host IP addresses to the Jetson interface connected
-to the LiDAR and set `lidar_configs[0].ip` to the MID-360 address. The image
-publishes `sensor_msgs/PointCloud2` using `xfer_format=0`.
+- **Model block.** Livox SDK2 reads only the block named after the connected model: `"Mid360s"` for
+  a Mid-360S, `"MID360"` for a Mid-360 (both `lidar_type: 8`). The wrong name means the SDK never
+  sends the LiDAR the host's address, and no data arrives. Check the label on the housing, or the
+  device type the driver logs at start-up.
+- **Addresses.** The LiDAR's factory IP is `192.168.1.1<last two digits of its serial>`;
+  `sudo tcpdump -ni <iface> udp port 56000` shows its broadcasts. `host_ip` is the Orin's interface
+  wired to it (192.168.1.50/24 on the USB Ethernet adapter).
+- **Extrinsics** stay at zero: points come out in the LiDAR frame, and the LiDAR-to-IMU and
+  body extrinsics belong to the estimator's config.

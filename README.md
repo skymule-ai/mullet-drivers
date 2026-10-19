@@ -38,7 +38,7 @@ after hardware validation on the target Orin.
 
 The D435i launch enables color, depth, accelerometer, gyroscope, synchronized
 frames, aligned depth, and a textured PointCloud2. The MID-360 image publishes
-PointCloud2 without launching RViz. CUDA is available for downstream
+`/livox/lidar` as `livox_ros_driver2/msg/CustomMsg` and `/livox/imu` (accelerations in g), without RViz. CUDA is available for downstream
 perception nodes; neither vendor driver automatically moves its point-cloud
 generation onto CUDA.
 
@@ -68,6 +68,34 @@ Without a display on the Orin, the `foxglove` profile runs foxglove_bridge from
 the same image. Open Lichtblick or Foxglove on the ground station and connect to
 `ws://<drone-ip>:8765`. The bridge streams only the topics a panel subscribes to;
 a raw MID-360 cloud is about 5 MB/s over WiFi.
+
+## MID-360
+
+- **Network.** The LiDAR talks UDP to a fixed host address. On the Orin, give the interface wired
+  to it a static address and no default route:
+  `sudo nmcli con add type ethernet ifname <iface> con-name livox ipv4.method manual
+  ipv4.addresses 192.168.1.50/24 ipv4.never-default yes ipv6.method disabled`.
+  See [config/livox/README.md](config/livox/README.md) for the model block and the LiDAR's IP.
+- **CustomMsg, not PointCloud2.** `/livox/lidar` carries per-point offset times, which LIO needs
+  to deskew a scan. Foxglove and RViz cannot draw it: view an estimator's cloud (FAST-LIO's
+  `cloud_registered_body`), or run the driver with `xfer_format:=0` for raw PointCloud2.
+- **Time.** The driver stamps messages with the LiDAR's clock, which counts from power-on until
+  a PTP master sets it. The `livox-ptp` service (profile `livox`) runs `ptp4l` as master on
+  `LIVOX_IFACE`, with software timestamping. It never steers the host clock. Check that
+  `/livox/imu` header stamps match the host's clock (mullet-localization's `scripts/test-on-orin.sh`
+  prints the offset).
+- **Using the Livox messages in another image.** Copy them from this image; do not rebuild the
+  SDK or driver. The message type and its Jazzy type hash then match the driver exactly:
+
+  ```dockerfile
+  ARG LIVOX_IMAGE=ghcr.io/skymule-ai/mullet-drivers-livox:v0.5.0
+  FROM ${LIVOX_IMAGE} AS livox
+  FROM ${BASE_IMAGE}
+  COPY --from=livox /opt/livox_ws/install /opt/livox_ws/install
+  COPY --from=livox /usr/local/lib/liblivox_lidar_sdk_shared.so /usr/local/lib/
+  ```
+
+  Then source `/opt/livox_ws/install/setup.bash`. Use the same `mullet-base` release as this image.
 
 ## Responsibilities
 
