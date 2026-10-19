@@ -79,11 +79,11 @@ a raw MID-360 cloud is about 5 MB/s over WiFi.
 - **CustomMsg, not PointCloud2.** `/livox/lidar` carries per-point offset times, which LIO needs
   to deskew a scan. Foxglove and RViz cannot draw it: view an estimator's cloud (FAST-LIO's
   `cloud_registered_body`), or run the driver with `xfer_format:=0` for raw PointCloud2.
-- **Time.** The driver stamps messages with the LiDAR's clock, which counts from power-on until
-  a PTP master sets it. The `livox-ptp` service (profile `livox`) runs `ptp4l` as master on
-  `LIVOX_IFACE`, with software timestamping. It never steers the host clock. Check that
-  `/livox/imu` header stamps match the host's clock (mullet-localization's `scripts/test-on-orin.sh`
-  prints the offset).
+- **Time.** Without a sync source, the driver stamps each packet (LiDAR and IMU) with the host's
+  clock when it arrives (`GetEthPacketTimestamp` in `pub_handler.cpp`): ROS time, but late by the
+  network and driver latency, and jittered by it (a few ms). With PTP, the stamp is the LiDAR's own
+  measurement time on the host clock. The `livox-ptp` service (profile `livox`) runs `ptp4l` as
+  master on `LIVOX_IFACE`, with software timestamping; it never steers the host clock.
 - **Using the Livox messages in another image.** Copy them from this image; do not rebuild the
   SDK or driver. The message type and its Jazzy type hash then match the driver exactly:
 

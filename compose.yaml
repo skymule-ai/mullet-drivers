@@ -24,8 +24,8 @@ services:
     volumes:
       - ./config/livox:/config:ro
 
-  # PTP master on the Orin's LiDAR interface: until it runs, the MID-360 stamps its messages with its
-  # own clock (seconds since power-on), not ROS time. Software timestamping: USB NICs have no PHC.
+  # PTP master on the Orin's LiDAR interface. Without it the driver stamps each packet on arrival
+  # (late and jittered by the link); with it, at measurement. Software timestamping: no PHC on USB NICs.
   # Server only, and no CAP_SYS_TIME: it never steers the Orin clock (chrony owns that).
   livox-ptp:
     profiles: [livox]

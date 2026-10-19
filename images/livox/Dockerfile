@@ -57,7 +57,7 @@ RUN mkdir -p src && \
 # /livox/lidar is livox_ros_driver2/msg/CustomMsg (xfer_format 1): per-point offset times, which
 # FAST-LIO needs to deskew the scan. Images that consume it copy /opt/livox_ws/install and the SDK
 # library from this image (COPY --from), so the message type and its Jazzy type hash stay identical.
-# ptp4l is here for the livox-ptp service: the MID-360 stamps with its own clock until synced.
+# ptp4l is here for the livox-ptp service: synced, the MID-360 stamps at measurement, not on arrival.
 COPY images/livox/entrypoint.sh /usr/local/bin/mullet-livox-entrypoint
 COPY images/livox/profile.sh /etc/profile.d/10-mullet-livox.sh
 
