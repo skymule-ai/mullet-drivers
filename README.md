@@ -141,4 +141,5 @@ CI builds the Livox, RealSense and viz images independently on ARM64. Branch pus
 SHA-tagged test images; release tags publish matching immutable driver tags.
 All CI builds use `mullet-base:v0.5.1` (ROS 2 Jazzy, like mullet-core).
 Images are `ghcr.io/skymule-ai/mullet-drivers-{livox,realsense,viz}`; tags up to
-`v0.3.0` are the Humble images, published as `mullet-ros-{livox,realsense}`.
+`v0.3.0` were the Humble images, published as `mullet-ros-{livox,realsense}`; those packages
+were deleted on 2026-10-19.
