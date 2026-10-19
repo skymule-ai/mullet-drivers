@@ -84,6 +84,10 @@ a raw MID-360 cloud is about 5 MB/s over WiFi.
   network and driver latency, and jittered by it (a few ms). With PTP, the stamp is the LiDAR's own
   measurement time on the host clock. The `livox-ptp` service (profile `livox`) runs `ptp4l` as
   master on `LIVOX_IFACE`, with software timestamping; it never steers the host clock.
+  It uses gPTP over L2 ([`images/livox/livox-gptp.cfg`](images/livox/livox-gptp.cfg)): with ptp4l's
+  default IEEE 1588 over UDP, the MID-360 answers every Sync but never syncs. Check with
+  `docker compose exec livox livox-status <iface>`, which reads the sync state the LiDAR reports
+  (`time_sync_type 1`, offset in µs) and exits 1 when it is not synced.
 - **Using the Livox messages in another image.** Copy them from this image; do not rebuild the
   SDK or driver. The message type and its Jazzy type hash then match the driver exactly:
 

@@ -24,15 +24,16 @@ services:
     volumes:
       - ./config/livox:/config:ro
 
-  # PTP master on the Orin's LiDAR interface. Without it the driver stamps each packet on arrival
+  # gPTP master on the Orin's LiDAR interface. Without it the driver stamps each packet on arrival
   # (late and jittered by the link); with it, at measurement. Software timestamping: no PHC on USB NICs.
   # Server only, and no CAP_SYS_TIME: it never steers the Orin clock (chrony owns that).
+  # Check: docker compose exec livox livox-status ${LIVOX_IFACE}
   livox-ptp:
     profiles: [livox]
     image: ghcr.io/skymule-ai/mullet-drivers-livox:${LIVOX_IMAGE_TAG:-local}
     network_mode: host
     restart: unless-stopped
-    command: [ptp4l, -i, "${LIVOX_IFACE:?set LIVOX_IFACE in .env}", -S, -m, --serverOnly, "1"]
+    command: [ptp4l, -i, "${LIVOX_IFACE:?set LIVOX_IFACE in .env}", -S, -m, -f, /etc/linuxptp/livox-gptp.cfg]
 
   realsense:
     profiles: [realsense]

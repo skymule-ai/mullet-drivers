@@ -58,10 +58,14 @@ RUN mkdir -p src && \
 # FAST-LIO needs to deskew the scan. Images that consume it copy /opt/livox_ws/install and the SDK
 # library from this image (COPY --from), so the message type and its Jazzy type hash stay identical.
 # ptp4l is here for the livox-ptp service: synced, the MID-360 stamps at measurement, not on arrival.
+# The MID-360 syncs to gPTP (livox-gptp.cfg), not to ptp4l's default IEEE 1588 over UDP.
+# livox-status reads the sync state the LiDAR itself reports.
+COPY images/livox/livox-gptp.cfg /etc/linuxptp/livox-gptp.cfg
+COPY images/livox/livox-status.py /usr/local/bin/livox-status
 COPY images/livox/entrypoint.sh /usr/local/bin/mullet-livox-entrypoint
 COPY images/livox/profile.sh /etc/profile.d/10-mullet-livox.sh
 
-RUN chmod 0755 /usr/local/bin/mullet-livox-entrypoint && \
+RUN chmod 0755 /usr/local/bin/mullet-livox-entrypoint /usr/local/bin/livox-status && \
     chmod 0644 /etc/profile.d/10-mullet-livox.sh
 
 ENTRYPOINT ["/usr/local/bin/mullet-livox-entrypoint"]
