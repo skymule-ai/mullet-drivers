@@ -15,8 +15,6 @@ services:
     build:
       context: .
       dockerfile: images/livox/Dockerfile
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
     image: ghcr.io/skymule-ai/mullet-drivers-livox:${LIVOX_IMAGE_TAG:-local}
     network_mode: host
     runtime: nvidia
@@ -29,8 +27,6 @@ services:
     build:
       context: .
       dockerfile: images/realsense/Dockerfile
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
     image: ghcr.io/skymule-ai/mullet-drivers-realsense:${REALSENSE_IMAGE_TAG:-local}
     network_mode: host
     runtime: nvidia
@@ -59,8 +55,6 @@ services:
     build:
       context: .
       dockerfile: images/viz/Dockerfile
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
     image: ghcr.io/skymule-ai/mullet-drivers-viz:${VIZ_IMAGE_TAG:-local}
     network_mode: host
     runtime: nvidia
