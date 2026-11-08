@@ -1,7 +1,7 @@
 # mullet-drivers
 
 ROS 2 Jazzy sensor-driver images for the Mullet Jetson platform. Each driver image
-extends an immutable release of `mullet-ros2-base`; the driver repository does
+extends an immutable release of `mullet-base`; the driver repository does
 not modify the base image or store aircraft-specific calibration.
 
 ## Layout
@@ -16,11 +16,10 @@ compose.yaml        Select drivers through Compose profiles
 
 ## Base-image contract
 
-All images use the base release selected by `BASE_IMAGE` in `.env`:
-
-```dotenv
-BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0
-```
+Each image's Dockerfile pins the base release in `ARG BASE_IMAGE`, currently
+`ghcr.io/skymule-ai/mullet-base:v0.6.0`. Compose and CI build with that pin as is, so a bump
+is one line per Dockerfile. For a test build on another base, pass
+`--build-arg BASE_IMAGE=...`.
 
 Use a release tag, never `main`, for driver builds intended for a drone.
 
@@ -111,6 +110,6 @@ to the local X11 display; defer it on headless Orins.
 
 CI builds the Livox, RealSense and viz images independently on ARM64. Branch pushes publish
 SHA-tagged test images; release tags publish matching immutable driver tags.
-All CI builds use `mullet-ros2-base:v0.5.0` (ROS 2 Jazzy, like mullet-core).
+All CI builds use the Dockerfiles' base, `mullet-base:v0.6.0` (ROS 2 Jazzy, like mullet-core).
 Images are `ghcr.io/skymule-ai/mullet-drivers-{livox,realsense,viz}`; tags up to
 `v0.3.0` are the Humble images, published as `mullet-ros-{livox,realsense}`.
