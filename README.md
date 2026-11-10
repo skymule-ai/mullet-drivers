@@ -37,7 +37,7 @@ after hardware validation on the target Orin.
 
 The D435i launch enables color, depth, accelerometer, gyroscope, synchronized
 frames, aligned depth, and a textured PointCloud2. The MID-360 image publishes
-PointCloud2 without launching RViz. CUDA is available for downstream
+`/livox/lidar` as `livox_ros_driver2/msg/CustomMsg` and `/livox/imu` (accelerations in g), without RViz. CUDA is available for downstream
 perception nodes; neither vendor driver automatically moves its point-cloud
 generation onto CUDA.
 
@@ -67,6 +67,38 @@ Without a display on the Orin, the `foxglove` profile runs foxglove_bridge from
 the same image. Open Lichtblick or Foxglove on the ground station and connect to
 `ws://<drone-ip>:8765`. The bridge streams only the topics a panel subscribes to;
 a raw MID-360 cloud is about 5 MB/s over WiFi.
+
+## MID-360
+
+- **Network.** The LiDAR talks UDP to a fixed host address. On the Orin, give the interface wired
+  to it a static address and no default route:
+  `sudo nmcli con add type ethernet ifname <iface> con-name livox ipv4.method manual
+  ipv4.addresses 192.168.1.50/24 ipv4.never-default yes ipv6.method disabled`.
+  See [config/livox/README.md](config/livox/README.md) for the model block and the LiDAR's IP.
+- **CustomMsg, not PointCloud2.** `/livox/lidar` carries per-point offset times, which LIO needs
+  to deskew a scan. Foxglove and RViz cannot draw it: view an estimator's cloud (FAST-LIO's
+  `cloud_registered_body`), or run the driver with `xfer_format:=0` for raw PointCloud2.
+- **Time.** Without a sync source, the driver stamps each packet (LiDAR and IMU) with the host's
+  clock when it arrives (`GetEthPacketTimestamp` in `pub_handler.cpp`): ROS time, but late by the
+  network and driver latency, and jittered by it (a few ms). With PTP, the stamp is the LiDAR's own
+  measurement time on the host clock. The `livox-ptp` service (profile `livox`) runs `ptp4l` as
+  master on `LIVOX_IFACE`, with software timestamping; it never steers the host clock.
+  It uses gPTP over L2 ([`images/livox/livox-gptp.cfg`](images/livox/livox-gptp.cfg)): with ptp4l's
+  default IEEE 1588 over UDP, the MID-360 answers every Sync but never syncs. Check with
+  `docker compose exec livox livox-status <iface>`, which reads the sync state the LiDAR reports
+  (`time_sync_type 1`, offset in µs) and exits 1 when it is not synced.
+- **Using the Livox messages in another image.** Copy them from this image; do not rebuild the
+  SDK or driver. The message type and its Jazzy type hash then match the driver exactly:
+
+  ```dockerfile
+  ARG LIVOX_IMAGE=ghcr.io/skymule-ai/mullet-drivers-livox:v0.5.0
+  FROM ${LIVOX_IMAGE} AS livox
+  FROM ${BASE_IMAGE}
+  COPY --from=livox /opt/livox_ws/install /opt/livox_ws/install
+  COPY --from=livox /usr/local/lib/liblivox_lidar_sdk_shared.so /usr/local/lib/
+  ```
+
+  Then source `/opt/livox_ws/install/setup.bash`. Use the same `mullet-base` release as this image.
 
 ## Responsibilities
 
@@ -112,4 +144,5 @@ CI builds the Livox, RealSense and viz images independently on ARM64. Branch pus
 SHA-tagged test images; release tags publish matching immutable driver tags.
 All CI builds use the Dockerfiles' base, `mullet-base:v0.6.0` (ROS 2 Jazzy, like mullet-core).
 Images are `ghcr.io/skymule-ai/mullet-drivers-{livox,realsense,viz}`; tags up to
-`v0.3.0` are the Humble images, published as `mullet-ros-{livox,realsense}`.
+`v0.3.0` were the Humble images, published as `mullet-ros-{livox,realsense}`; those packages
+were deleted on 2026-10-19.
